@@ -15,6 +15,7 @@ using System.Linq;
 using GateWayAppConfig = Surging.Core.ApiGateWay.AppConfig;
 using System.Reflection;
 using Surging.Core.CPlatform.Utilities;
+using Newtonsoft.Json.Linq;
 
 namespace Surging.ApiGateway.Controllers
 {
@@ -34,11 +35,27 @@ namespace Surging.ApiGateway.Controllers
             _authorizationServerProvider = authorizationServerProvider;
         }
        
-        public async Task<ServiceResult<object>> Path(string path, [FromQuery]string serviceKey, [FromBody]Dictionary<string, object> model)
+        public async Task<ServiceResult<object>> Path([FromServices]IServicePartProvider servicePartProvider, string path, [FromBody]Dictionary<string, object> model)
         {
+            string serviceKey = this.Request.Query["servicekey"];
+            if (model == null)
+            {
+                model = new Dictionary<string, object>();
+            }
+            foreach (string n in this.Request.Query.Keys)
+            {
+                model[n] = this.Request.Query[n].ToString();
+            }
             ServiceResult<object> result = ServiceResult<object>.Create(false,null);
             path = path.ToLower() == GateWayAppConfig.TokenEndpointPath.ToLower() ? 
                 GateWayAppConfig.AuthorizationRoutePath : path.ToLower();
+            if( await GetAllowRequest(path)==false) return new ServiceResult<object> { IsSucceed = false, StatusCode = (int)ServiceStatusCode.RequestError, Message = "Request error" };
+            if (servicePartProvider.IsPart(path))
+            {
+                result = ServiceResult<object>.Create(true, await servicePartProvider.Merge(path, model));
+                result.StatusCode = (int)ServiceStatusCode.Success;
+            }
+            else
             if ( OnAuthorization(path, model,ref result))
             {
                 if (path == GateWayAppConfig.AuthorizationRoutePath)
@@ -70,6 +87,13 @@ namespace Surging.ApiGateway.Controllers
                 }
             }
             return result;
+        }
+
+        private async Task<bool> GetAllowRequest(string path)
+        {
+            bool isSuccess = true;
+            var route = await _serviceRouteProvider.GetRouteByPath(path);
+            return !route.ServiceDescriptor.DisableNetwork();
         }
 
         private bool OnAuthorization(string path, Dictionary<string, object> model, ref ServiceResult<object> result)

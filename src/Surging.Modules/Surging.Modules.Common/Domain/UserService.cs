@@ -2,6 +2,7 @@
 using Surging.Core.CPlatform.EventBus.Events;
 using Surging.Core.CPlatform.EventBus.Implementation;
 using Surging.Core.CPlatform.Ioc;
+using Surging.Core.CPlatform.Transport.Implementation;
 using Surging.Core.ProxyGenerator;
 using Surging.IModuleServices.Common;
 using Surging.IModuleServices.Common.Models;
@@ -35,6 +36,7 @@ namespace Surging.Modules.Common.Domain
 
         public Task<int> GetUserId(string userName)
         {
+            var xid = RpcContext.GetContext().GetAttachment("xid");
             return Task.FromResult(1);
         }
 
@@ -97,6 +99,11 @@ namespace Surging.Modules.Common.Domain
         public Task<IdentityUser> Save(IdentityUser requestData)
         {
             return Task.FromResult(requestData);
+        }
+
+        public Task<ApiResult<UserModel>> GetApiResult()
+        {
+            return Task.FromResult(new ApiResult<UserModel>() { Value = new UserModel { Name = "fanly" }, StatusCode = 200 });
         }
         #endregion Implementation of IUserService
     }

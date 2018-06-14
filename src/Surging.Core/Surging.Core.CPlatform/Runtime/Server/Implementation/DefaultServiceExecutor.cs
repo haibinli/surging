@@ -12,6 +12,7 @@ using Surging.Core.CPlatform.Routing;
  using Surging.Core.CPlatform;
 using Newtonsoft.Json;
 using Surging.Core.CPlatform.Utilities;
+using Surging.Core.CPlatform.Transport.Implementation;
 
 namespace Surging.Core.CPlatform.Runtime.Server.Implementation
 {
@@ -74,6 +75,12 @@ namespace Surging.Core.CPlatform.Runtime.Server.Implementation
                 if (_logger.IsEnabled(LogLevel.Error))
                     _logger.LogError($"根据服务Id：{remoteInvokeMessage.ServiceId}，找不到服务条目。");
                 return;
+            }
+
+            if(remoteInvokeMessage.Attachments !=null)
+            {
+                foreach(var attachment in remoteInvokeMessage.Attachments)
+                RpcContext.GetContext().SetAttachment(attachment.Key,attachment.Value);
             }
             
 
@@ -141,6 +148,7 @@ namespace Surging.Core.CPlatform.Runtime.Server.Implementation
                 if (_logger.IsEnabled(LogLevel.Error))
                     _logger.LogError(exception,"执行本地逻辑时候发生了错误。");
                 resultMessage.ExceptionMessage = GetExceptionMessage(exception);
+                resultMessage.StatusCode = exception.HResult;
             }
         }
 

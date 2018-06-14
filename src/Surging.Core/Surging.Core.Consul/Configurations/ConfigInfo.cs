@@ -17,8 +17,9 @@ namespace Surging.Core.Consul.Configurations
         public ConfigInfo(string connectionString,string routePath = "services/serviceRoutes/",
              string subscriberPath = "services/serviceSubscribers/",
             string commandPath = "services/serviceCommands/",
-            string cachePath="services/serviceCaches/") :
-            this(connectionString, TimeSpan.FromSeconds(20), routePath, subscriberPath,commandPath, cachePath)
+            string cachePath="services/serviceCaches/",
+            bool reloadOnChange=false) :
+            this(connectionString, TimeSpan.FromSeconds(20), routePath, subscriberPath,commandPath, cachePath, reloadOnChange)
         {
         }
 
@@ -35,20 +36,25 @@ namespace Surging.Core.Consul.Configurations
             string routePath = "services/serviceRoutes/",
              string subscriberPath = "services/serviceSubscribers/",
             string commandPath = "services/serviceCommands/",
-            string cachePath= "services/serviceCaches/")
+            string cachePath= "services/serviceCaches/",
+            bool reloadOnChange=false)
         {
             CachePath = cachePath;
+            ReloadOnChange = reloadOnChange;
             SessionTimeout = sessionTimeout;
             RoutePath = routePath;
             SubscriberPath = subscriberPath;
             CommandPath = commandPath;
-            var  address= connectionString.Split(":");
-            if(address.Length>1)
+            if (!string.IsNullOrEmpty(connectionString))
             {
-                int port;
-                int.TryParse(address[1], out port);
-                Host = address[0];
-                Port = port;
+                var address = connectionString.Split(":");
+                if (address.Length > 1)
+                {
+                    int port;
+                    int.TryParse(address[1], out port);
+                    Host = address[0];
+                    Port = port;
+                }
             }
         }
 
@@ -62,6 +68,8 @@ namespace Surging.Core.Consul.Configurations
             Host = host;
             Port = port;
         }
+
+        public bool ReloadOnChange { get; set; }
 
         /// <summary>
         /// watch 时间间隔

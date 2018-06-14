@@ -1,11 +1,11 @@
-# surging 　　　　　　　　　　　　　　　　　　　　[English](https://github.com/dotnetcore/surging/blob/master/README.EN.md)
-[![Member project of .NET China Foundation](https://github.com/dotnetcore/Home/blob/master/icons/member-project-of-netchina.png)](https://github.com/dotnetcore)
+﻿# surging 　　　　　　　　　　　　　　　　　　　　[English](https://github.com/dotnetcore/surging/blob/master/README.EN.md)
+[![Member project of .NET Core Community](https://img.shields.io/badge/member%20project%20of-NCC-9e20c9.svg)](https://github.com/dotnetcore)
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://mit-license.org/)
-# surging 是一个分布式微服务框架,提供高性能RPC远程服务调用，采用Zookeeper、Consul作为surging服务的注册中心，集成了哈希，随机，轮询，压力最小优先作为负载均衡的算法，RPC集成采用的是netty框架，采用异步传输。
+### surging 是一个分布式微服务框架,提供高性能RPC远程服务调用，采用Zookeeper、Consul作为surging服务的注册中心，集成了哈希，随机，轮询，压力最小优先作为负载均衡的算法，RPC集成采用的是netty框架，采用异步传输。
 
 <br />
 
-## 名字由来
+### 名字由来
 
 英文名：surging
 
@@ -15,7 +15,15 @@
 
 我对阁下的景仰犹如滔滔江水,连绵不绝,犹如黄河泛滥,一发而不可收拾，而取名英文的含义也希望此框架能流行起来，也能像《.net core surging》这句英文语句含义一样，.net core技术风起云涌,冲击整个软件生态系统。
 
-## 配置：
+### 微服务定义
+微服务应该是可以自由组合拆分，对于每个业务都是独立的，针对于业务模块的 CRUD 可以注册为服务，而每个服务都是高度自治的，从开发，部署都是独立，而每个服务只做单一功能，利用领域驱动设计去更好的拆分成粒度更小的模块
+
+
+### surging模块功能
+
+<img src="https://github.com/dotnetcore/surging/blob/master/docs/SurgingFunction.png" alt="surging模块功能" />
+
+### 配置：
 
  ```c#
 var host = new ServiceHostBuilder()
@@ -50,11 +58,11 @@ var host = new ServiceHostBuilder()
                     options.RequestCacheEnabled=true; //开启缓存（只有通过接口代理远程调用，才能启用缓存）
                     options.Injection="return null"; //注入方式
                     options.InjectionNamespaces= new string[] { "Surging.IModuleServices.Common" }); //脚本注入使用的命名空间
-                    options.BreakeErrorThresholdPercentage="50";  //错误率达到多少开启熔断保护
+                    options.BreakeErrorThresholdPercentage=50;  //错误率达到多少开启熔断保护
                     options.BreakeSleepWindowInMilliseconds=60000; //熔断多少毫秒后去尝试请求
                     options.BreakerForceClosed=false;   //是否强制关闭熔断
                     options.BreakerRequestVolumeThreshold = 20;//10秒钟内至少多少请求失败，熔断器才发挥起作用
-                    options.MaxConcurrentRequests== 100000;//支持最大并发
+                    options.MaxConcurrentRequests=100000;//支持最大并发
                     options.ShuntStrategy=AddressSelectorMode.Polling; //使用轮询负载分流策略
                     options.NotRelatedAssemblyFiles = "Centa.Agency.Application.DTO\\w*|StackExchange.Redis\\w*"; //排除无需依赖注册
                 })
@@ -76,6 +84,49 @@ var host = new ServiceHostBuilder()
             }
  ```    
 <br/>
+
+### 文件配置：
+
+```c#
+{
+  "ConnectionString": "${Register_Conn}|127.0.0.1:8500", // ${环境变量名} |默认值,
+  "SessionTimeout": "${Register_SessionTimeout}|50",
+  "ReloadOnChange": true
+}
+
+```
+
+### 非容器环境文件配置
+
+```c#
+ {
+  "Ip": "${Server_IP}|127.0.0.1",
+  "WatchInterval": 30,
+  "Port": "${Server_port}",
+  "Token": "true",
+  "RootPath": "${RootPath}",
+  "RequestCacheEnabled": false
+}
+
+```
+
+
+### 容器环境文件配置
+
+```c#
+ {
+  "Ip": "${Server_IP}|0.0.0.0",//私有容器IP
+  "WatchInterval": 30,
+  "Port": "${Server_port}|98",//私有容器端口
+   "MappingIp": "${Mapping_ip}",//公开主机IP
+  "MappingPort": "${Mapping_Port}",//公开主机端口
+  "Token": "true",
+  "RootPath": "${RootPath}",
+  "RequestCacheEnabled": false
+}
+
+```
+
 
 服务路由访问配置：
 <br/>
@@ -193,6 +244,7 @@ IDE:Visual Studio 2017 15.5,vscode
 <br/>
 框架：.NET core 2.1
 <br/>
+QQ群：615562965
 * [Demo](https://github.com/billyang/SurgingDemo)
 * [文档](http://docs.dotnet-china.org/surging/)
 * [简单示例](https://github.com/dotnetcore/surging/blob/master/docs/docs.en/INDEX.md)
